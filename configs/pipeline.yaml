@@ -1,14 +1,15 @@
 #TODO 
 # ask Matt about adding the views variable to the config file so we can pick the views that we have and in that way instead of iterating over files we will iterate over views - which will determine things
 
-dataset_name: fly-anipose
+dataset_name: chickadee-crop
 
 lightning_pose_config: /teamspace/studios/this_studio/lp3d-analysis/configs/config_${dataset_name}.yaml
 
 # [needed?] pipeline seed for initial data split
 pipeline_seeds: 0
 
-outputs_dir: /teamspace/studios/this_studio/outputs/${dataset_name}
+root_dir: /home/ks3582/synced/lp3d_analysis/outputs
+outputs_dir: ${root_dir}/${dataset_name}
 
 intermediate_results_dir: results_100_5k
 
@@ -37,8 +38,9 @@ train_networks:
   # run inference on videos in these directories (independent of training videos)
   inference_dirs:
     # - videos_new
-    # - videos-for-each-labeled-frame
+    - videos-for-each-labeled-frame
     - videos_debug
+    # - videos_ind
 
   # training parameters
   # min_steps: 5000
@@ -72,8 +74,14 @@ post_processing_labels:
 post_processing_videos:
 
   eks_singleview:
+<<<<<<< HEAD
     run: True
     overwrite: True
+=======
+    run: False
+    overwrite: False
+  # Karan turned these on for testing
+>>>>>>> 0f5e607... update config files for chickadee
   eks_multiview:
     run: True
     overwrite: True
