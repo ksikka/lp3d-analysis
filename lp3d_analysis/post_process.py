@@ -4,7 +4,7 @@ import numpy as np
 
 from typing import Optional, Union
 
-
+from lightning_pose.utils.cropzoom import generate_cropped_csv_file
 from omegaconf import DictConfig
 from typing import List, Literal
 from pathlib import Path
@@ -232,6 +232,7 @@ def post_process_ensemble_labels(
                 csv_files = [f for f in os.listdir(dir_path) if f.endswith('.csv')]
                 print(f"Found {len(csv_files)} CSV files in {dir_name}")
                 original_structure[dir_name] = csv_files
+            break
 
 
         if mode == 'eks_multiview':
@@ -261,9 +262,38 @@ def post_process_ensemble_labels(
                                 pred_file = os.path.join(seed_sequence_dir, csv_file)
                                 if os.path.exists(pred_file):
                                     all_pred_files.append(pred_file)
-                    
-                    
+
                     if all_pred_files:
+                        has_bbox = False
+                        all_pred_files_remapped = []
+                        def _get_bbox_path(p: Path) -> Path:
+                            """Given some preds file p, it will return the bbox path."""
+                            n_levels_up = len(p.parent.parts) - len(Path(results_dir).parts)
+                            if "eks_multiview" in p.parts:
+                                n_levels_up -= 1
+                            p_minus_model_dir = Path(p).relative_to(p.parents[n_levels_up])
+                            p_rooted_at_data_dir = Path(cfg_lp.data.data_dir) / p_minus_model_dir
+                            bbox_path = p_rooted_at_data_dir.with_stem(p.stem + "_bbox")
+                            return bbox_path
+
+                        # Check if a bbox file exists
+                        for p in all_pred_files:
+                            p = Path(p)
+                            # p is the absolute path to the prediction file.
+                            # The bbox path has the same relative directory structure but rooted in the data directory
+                            # and suffixed by _bbox.csv.
+                            bbox_path = _get_bbox_path(p)
+                            # If there's a bbox_file, remap to original space by adding bbox df to preds df.
+                            # Save as _remapped.csv version of preds_file.
+                            if has_bbox or bbox_path.is_file():
+                                has_bbox = True
+                                remapped_p = p.with_stem(p.stem + "_remapped")
+                                all_pred_files_remapped.append(str(remapped_p))
+                                generate_cropped_csv_file(p, bbox_path, remapped_p, mode="add")
+
+                        if has_bbox:
+                            all_pred_files = all_pred_files_remapped
+
                         # Get input_dfs_list and keypoint_names for this file
                         input_dfs_list, keypoint_names = format_data(
                             input_source=all_pred_files,
@@ -280,10 +310,18 @@ def post_process_ensemble_labels(
 
                         # Save results using original filename
                         for view, result_df in results_dfs.items():
-                            if view == curr_view:  # Only save for current view
-                                result_file = os.path.join(sequence_output_dir, csv_file)
-                                result_df.to_csv(result_file)
-                                print(f"Saved EKS results to {result_file}")
+                            result_file = os.path.join(sequence_output_dir, csv_file)
+                            result_file = result_file.replace(curr_view, view)
+                            result_file = Path(result_file)
+                            result_file.parent.mkdir(parents=True, exist_ok=True)
+
+                            if has_bbox:
+                                remapped_results_file = result_file.with_stem(result_file.stem + "_remapped")
+                                result_df.to_csv(remapped_results_file)
+                                bbox_path = _get_bbox_path(result_file)
+                                generate_cropped_csv_file(remapped_results_file, bbox_path, result_file, mode="subtract")
+
+                            print(f"Saved EKS results to {result_file}")
 
                
                 

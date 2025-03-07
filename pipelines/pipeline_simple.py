@@ -42,7 +42,8 @@ def pipeline(config_file: str, for_seed: int | None = None) -> None:
     # Train ensembles
     # -------------------------------------------------------------------------------------
 
-    if cfg_pipe.train_networks.run:
+    # Hack to generate cfg_lp_copy for post-process when run=False
+    if True:
         for model_type in cfg_pipe.train_networks.model_types:
             for n_hand_labels in cfg_pipe.train_networks.n_hand_labels:
                 for rng_seed in cfg_pipe.train_networks.ensemble_seeds:
@@ -58,6 +59,9 @@ def pipeline(config_file: str, for_seed: int | None = None) -> None:
                         f'{model_type}_{n_hand_labels}_{rng_seed}',
                     )
                     cfg_lp_copy = make_model_cfg(cfg_lp, cfg_pipe, data_dir, model_type, n_hand_labels, rng_seed)
+                    # Hack to generate cfg_lp_copy for post-process when run=False
+                    if not cfg_pipe.train_networks.run:
+                        continue
                     # Main function call
                     train_and_infer(
                         cfg_lp=cfg_lp_copy,

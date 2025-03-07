@@ -3,20 +3,19 @@
 
 dataset_name: chickadee-crop
 
-root_dir: /home/ks3582/synced/lp3d-analysis
-lightning_pose_config: ${root_dir}/configs/config_${dataset_name}.yaml
+lightning_pose_config: /home/ksikka/synced/lp3d-analysis/configs/config_${dataset_name}.yaml
 
 # [needed?] pipeline seed for initial data split
 pipeline_seeds: 0
 
-outputs_dir: ${root_dir}/outputs/${dataset_name}
+outputs_dir: /home/ksikka/axon_fuse/synced/lp3d-analysis/outputs/${dataset_name}
 
 intermediate_results_dir: results_100_5k
 
 # initial training of an ensemble of networks
 train_networks:
   # run this section?
-  run: True
+  run: False
   # overwrite previous results?
   overwrite: False
   # pose estimation data type
@@ -37,9 +36,9 @@ train_networks:
     # - context
   # run inference on videos in these directories (independent of training videos)
   inference_dirs:
-    # - videos_new
+    #- videos_new
     - videos-for-each-labeled-frame
-    - videos_debug
+    #- videos_debug
     # - videos_ind
 
   # training parameters
@@ -62,7 +61,7 @@ post_processing_labels:
     run: False
     overwrite: False
   eks_multiview:
-    run: False
+    run: True
     overwrite: False
   ensemble_mean:
     run: False
