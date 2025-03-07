@@ -3,13 +3,13 @@
 
 dataset_name: chickadee-crop
 
-lightning_pose_config: /teamspace/studios/this_studio/lp3d-analysis/configs/config_${dataset_name}.yaml
+root_dir: /home/ks3582/synced/lp3d-analysis
+lightning_pose_config: ${root_dir}/configs/config_${dataset_name}.yaml
 
 # [needed?] pipeline seed for initial data split
 pipeline_seeds: 0
 
-root_dir: /home/ks3582/synced/lp3d_analysis/outputs
-outputs_dir: ${root_dir}/${dataset_name}
+outputs_dir: ${root_dir}/outputs/${dataset_name}
 
 intermediate_results_dir: results_100_5k
 
@@ -33,8 +33,8 @@ train_networks:
     - 100
   # model type
   model_types:
-    # - supervised
-    - context
+    - supervised
+    # - context
   # run inference on videos in these directories (independent of training videos)
   inference_dirs:
     # - videos_new
@@ -52,7 +52,7 @@ train_networks:
   max_steps: 5000 # need 5000
   unfreezing_step: 260
   milestone_steps: [2000, 3000, 4000]
-  val_check_interval: 5
+  val_check_interval: 13
   train_check_interval: 5
 
 # post-processing options
@@ -74,23 +74,18 @@ post_processing_labels:
 post_processing_videos:
 
   eks_singleview:
-<<<<<<< HEAD
-    run: True
-    overwrite: True
-=======
     run: False
     overwrite: False
   # Karan turned these on for testing
->>>>>>> 0f5e607... update config files for chickadee
   eks_multiview:
     run: True
     overwrite: True
   ensemble_mean:
-    run: True
-    overwrite: True
+    run: False
+    overwrite: False
   ensemble_median:
-    run: True
-    overwrite: True
+    run: False
+    overwrite: False
 
 
 
